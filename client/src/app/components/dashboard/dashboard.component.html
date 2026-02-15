@@ -1,0 +1,199 @@
+<div>
+      <div class="mb-4">
+        <h2 class="mb-1">Portfolio Dashboard</h2>
+        <p class="text-body-secondary">Overview of drug development programs and clinical studies</p>
+      </div>
+
+      @if (loading()) {
+        <div class="d-flex justify-content-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      } @else if (stats()) {
+
+        <!-- KPI Cards -->
+        <c-row class="mb-4">
+          <c-col sm="6" xl="3">
+            <c-card class="mb-4">
+              <c-card-body class="d-flex align-items-center">
+                <div class="me-3 rounded-3 d-flex align-items-center justify-content-center"
+                     style="width: 56px; height: 56px; background: rgba(var(--cui-primary-rgb), .1);">
+                  <svg width="28" height="28" fill="none" stroke="var(--cui-primary)" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-body-secondary small text-uppercase fw-semibold">Total Programs</div>
+                  <div class="fs-4 fw-bold">{{ stats()!.totalPrograms }}</div>
+                </div>
+              </c-card-body>
+            </c-card>
+          </c-col>
+
+          <c-col sm="6" xl="3">
+            <c-card class="mb-4">
+              <c-card-body class="d-flex align-items-center">
+                <div class="me-3 rounded-3 d-flex align-items-center justify-content-center"
+                     style="width: 56px; height: 56px; background: rgba(var(--cui-success-rgb), .1);">
+                  <svg width="28" height="28" fill="none" stroke="var(--cui-success)" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-body-secondary small text-uppercase fw-semibold">Total Studies</div>
+                  <div class="fs-4 fw-bold">{{ stats()!.totalStudies }}</div>
+                </div>
+              </c-card-body>
+            </c-card>
+          </c-col>
+
+          <c-col sm="6" xl="3">
+            <c-card class="mb-4">
+              <c-card-body>
+                <div class="d-flex align-items-center mb-2">
+                  <div class="me-3 rounded-3 d-flex align-items-center justify-content-center"
+                       style="width: 56px; height: 56px; background: rgba(var(--cui-info-rgb), .1);">
+                    <svg width="28" height="28" fill="none" stroke="var(--cui-info)" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-body-secondary small text-uppercase fw-semibold">Total Enrollment</div>
+                    <div class="fs-4 fw-bold">{{ stats()!.totalEnrollment | number }}</div>
+                  </div>
+                </div>
+                <c-progress [value]="getEnrollmentPct()" color="info" class="mb-1" style="height: 6px;"></c-progress>
+                <small class="text-body-secondary">{{ getEnrollmentPct() | number:'1.0-0' }}% of target ({{ stats()!.targetEnrollment | number }})</small>
+              </c-card-body>
+            </c-card>
+          </c-col>
+
+          <c-col sm="6" xl="3">
+            <c-card class="mb-4">
+              <c-card-body class="d-flex align-items-center">
+                <div class="me-3 rounded-3 d-flex align-items-center justify-content-center"
+                     style="width: 56px; height: 56px; background: rgba(var(--cui-warning-rgb), .1);">
+                  <svg width="28" height="28" fill="none" stroke="var(--cui-warning)" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-body-secondary small text-uppercase fw-semibold">Active Programs</div>
+                  <div class="fs-4 fw-bold">{{ stats()!.byStatus['Active'] || 0 }}</div>
+                </div>
+              </c-card-body>
+            </c-card>
+          </c-col>
+        </c-row>
+
+        <!-- Breakdown Row -->
+        <c-row class="mb-4">
+          <!-- Programs by Phase -->
+          <c-col lg="6">
+            <c-card class="mb-4">
+              <c-card-header><strong>Programs by Phase</strong></c-card-header>
+              <c-card-body>
+                @for (entry of phaseEntries(); track entry[0]) {
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>{{ entry[0] }}</span>
+                      <span class="fw-semibold">{{ entry[1] }}</span>
+                    </div>
+                    <c-progress [value]="(entry[1] / stats()!.totalPrograms) * 100"
+                                [color]="getPhaseColor(entry[0])" style="height: 8px;"></c-progress>
+                  </div>
+                }
+              </c-card-body>
+            </c-card>
+          </c-col>
+
+          <!-- Programs by Therapeutic Area -->
+          <c-col lg="6">
+            <c-card class="mb-4">
+              <c-card-header><strong>Programs by Therapeutic Area</strong></c-card-header>
+              <c-card-body>
+                @for (entry of areaEntries(); track entry[0]) {
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>{{ entry[0] }}</span>
+                      <span class="fw-semibold">{{ entry[1] }}</span>
+                    </div>
+                    <c-progress [value]="(entry[1] / stats()!.totalPrograms) * 100"
+                                color="primary" style="height: 8px;"></c-progress>
+                  </div>
+                }
+              </c-card-body>
+            </c-card>
+          </c-col>
+        </c-row>
+
+        <!-- Enrollment by Phase -->
+        <c-card class="mb-4">
+          <c-card-header><strong>Enrollment by Phase</strong></c-card-header>
+          <c-card-body>
+            <c-row>
+              @for (item of stats()!.enrollmentByPhase; track item.phase) {
+                @if (item.target_enrollment > 0) {
+                  <c-col sm="6" xl="3" class="mb-3">
+                    <div class="border rounded-3 p-3 bg-body-tertiary">
+                      <div class="text-body-secondary small mb-1">{{ item.phase }}</div>
+                      <div class="fs-5 fw-semibold mb-2">{{ item.current_enrollment | number }}</div>
+                      <c-progress [value]="Math.min(100, (item.current_enrollment / item.target_enrollment) * 100)"
+                                  color="success" style="height: 6px;" class="mb-1"></c-progress>
+                      <small class="text-body-secondary">of {{ item.target_enrollment | number }} target</small>
+                    </div>
+                  </c-col>
+                }
+              }
+            </c-row>
+          </c-card-body>
+        </c-card>
+
+        <!-- Upcoming Milestones -->
+        <c-card class="mb-4">
+          <c-card-header class="d-flex justify-content-between align-items-center">
+            <strong>Upcoming Milestones</strong>
+            <a routerLink="/programs" class="btn btn-sm btn-outline-primary">View all programs &rarr;</a>
+          </c-card-header>
+          <c-card-body>
+            <div class="table-responsive">
+              <table cTable hover striped small>
+                <thead>
+                  <tr>
+                    <th>Milestone</th>
+                    <th>Program</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Planned Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (m of stats()!.upcomingMilestones; track m.id) {
+                    <tr>
+                      <td class="fw-medium">{{ m.title }}</td>
+                      <td>
+                        <a [routerLink]="['/programs', m.program_id]" class="text-primary text-decoration-none">
+                          {{ m.program_code }}
+                        </a>
+                      </td>
+                      <td>
+                        <c-badge [color]="getCategoryBadgeColor(m.category)">{{ m.category }}</c-badge>
+                      </td>
+                      <td>
+                        <c-badge [color]="getStatusBadgeColor(m.status)">{{ m.status }}</c-badge>
+                      </td>
+                      <td class="text-body-secondary">{{ m.planned_date }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </c-card-body>
+        </c-card>
+      }
+    </div>
