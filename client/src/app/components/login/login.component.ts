@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import {
@@ -44,8 +44,8 @@ import { IconDirective } from '@coreui/icons-angular';
                     <c-alert color="danger" class="mb-3">{{ error() }}</c-alert>
                   }
 
-                  <form cForm (ngSubmit)="onLogin()">
-                    <c-input-group class="mb-3">
+                  <form cForm #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)">
+                    <c-input-group class="mb-1">
                       <span cInputGroupText>
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -53,10 +53,15 @@ import { IconDirective } from '@coreui/icons-angular';
                         </svg>
                       </span>
                       <input cFormControl type="text" placeholder="Username"
-                             [(ngModel)]="username" name="username" required autocomplete="username" />
+                             [(ngModel)]="username" name="username" #usernameField="ngModel" required autocomplete="username" />
                     </c-input-group>
+                    @if (usernameField.invalid && usernameField.touched) {
+                      <div class="text-danger small mb-2">Username is required</div>
+                    } @else {
+                      <div class="mb-3"></div>
+                    }
 
-                    <c-input-group class="mb-4">
+                    <c-input-group class="mb-1">
                       <span cInputGroupText>
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -64,8 +69,13 @@ import { IconDirective } from '@coreui/icons-angular';
                         </svg>
                       </span>
                       <input cFormControl type="password" placeholder="Password"
-                             [(ngModel)]="password" name="password" required autocomplete="current-password" />
+                             [(ngModel)]="password" name="password" #passwordField="ngModel" required autocomplete="current-password" />
                     </c-input-group>
+                    @if (passwordField.invalid && passwordField.touched) {
+                      <div class="text-danger small mb-3">Password is required</div>
+                    } @else {
+                      <div class="mb-4"></div>
+                    }
 
                     <c-row>
                       <c-col [xs]="12">
@@ -120,7 +130,12 @@ export class LoginComponent {
     this.password = p;
   }
 
-  onLogin() {
+  onLogin(form: NgForm) {
+    if (form.invalid) {
+      Object.values(form.controls).forEach(c => c.markAsTouched());
+      return;
+    }
+
     this.loading.set(true);
     this.error.set('');
 
